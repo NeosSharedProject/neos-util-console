@@ -8,8 +8,9 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
     const { ownerId, path } = req.query;
     const ownerType = _.startsWith("ownerId", "U-") ? "users" : "groups";
 
-    const fixedPath = _.replace(path as string, new RegExp("/", "g"), "\\");
-
+    const fixedPath = encodeURI(
+      _.replace(path as string, new RegExp("/", "g"), "\\")
+    );
     axios
       .get(
         `https://www.neosvr-api.com/api/${ownerType}/${ownerId}/records?path=${fixedPath}`
