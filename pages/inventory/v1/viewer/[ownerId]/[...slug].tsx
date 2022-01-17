@@ -97,96 +97,98 @@ const Index = () => {
     fetcher
   );
   return (
-    <GridStyle>
-      {_(data)
-        .sortBy(({ recordType, name, creationTime }) => [
-          _.get(orderMap, recordType, -1),
-          recordType === "object" ? creationTime : name,
-        ])
-        .map(
-          ({
-            recordType,
-            name,
-            assetUri,
-            thumbnailUri,
-            ownerId: assetOwnerId,
-            creationTime,
-          }) => {
-            const assetId = _.last(_.split(assetUri, "/"));
-            const ownerId = _.get(_.split(assetUri, "/"), 3, assetOwnerId);
-            const fixedThumbnailUri =
-              "https://cloudxstorage.blob.core.windows.net/assets/" +
-              _.first(_.split(_.last(_.split(thumbnailUri, "/")), "."));
-            return (
-              <ItemStyle backColor={_.get(colorMap, recordType, "skyblue")}>
-                <div className="title">
-                  {recordType === "object" && (
-                    <div>
-                      <img className="thumbnail" src={fixedThumbnailUri} />
-                      <label>{_.slice(name, 0, 256)}</label>
-                      <button
-                        className="button"
-                        onClick={async () => {
-                          const response = await fetch(
-                            `https://decompress.kokoa.dev/?id=${_.first(
-                              _.split(assetId, ".")
-                            )}`
-                          );
-                          const data = await response.text();
-                          const blob = new Blob([data]);
-                          const element = document.createElement("a");
-                          element.href = window.URL.createObjectURL(blob);
-                          element.setAttribute("download", `${name}.json`);
-                          document.body.appendChild(element);
-                          element.click();
-                          element.remove();
-                        }}
-                      >
-                        Download json
-                      </button>
-                      <button
-                        className="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(assetUri);
-                        }}
-                      >
-                        Copy AssetUri
-                      </button>
-                    </div>
-                  )}
-                  {recordType === "link" && (
-                    <div>
-                      <div className="empty_thumbnail" />
-                      <a href={`/inventory/v1/link/${ownerId}/${assetId}`}>
-                        {_.slice(name, 0, 256)}
-                      </a>
-                      <button
-                        className="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            `neosrec:///${ownerId}/${assetId}`
-                          );
-                        }}
-                      >
-                        Copy linkUrl
-                      </button>
-                    </div>
-                  )}
-                  {recordType === "directory" && (
-                    <div>
-                      <div className="empty_thumbnail" />
-                      <a href={`${currentDir}/${encodeURI(name)}`}>
-                        {_.slice(name, 0, 256)}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </ItemStyle>
-            );
-          }
-        )
-        .value()}
-    </GridStyle>
+    <div>
+      <GridStyle>
+        {_(data)
+          .sortBy(({ recordType, name, creationTime }) => [
+            _.get(orderMap, recordType, -1),
+            recordType === "object" ? creationTime : name,
+          ])
+          .map(
+            ({
+              recordType,
+              name,
+              assetUri,
+              thumbnailUri,
+              ownerId: assetOwnerId,
+              creationTime,
+            }) => {
+              const assetId = _.last(_.split(assetUri, "/"));
+              const ownerId = _.get(_.split(assetUri, "/"), 3, assetOwnerId);
+              const fixedThumbnailUri =
+                "https://cloudxstorage.blob.core.windows.net/assets/" +
+                _.first(_.split(_.last(_.split(thumbnailUri, "/")), "."));
+              return (
+                <ItemStyle backColor={_.get(colorMap, recordType, "skyblue")}>
+                  <div className="title">
+                    {recordType === "object" && (
+                      <div>
+                        <img className="thumbnail" src={fixedThumbnailUri} />
+                        <label>{_.slice(name, 0, 256)}</label>
+                        <button
+                          className="button"
+                          onClick={async () => {
+                            const response = await fetch(
+                              `https://decompress.kokoa.dev/?id=${_.first(
+                                _.split(assetId, ".")
+                              )}`
+                            );
+                            const data = await response.text();
+                            const blob = new Blob([data]);
+                            const element = document.createElement("a");
+                            element.href = window.URL.createObjectURL(blob);
+                            element.setAttribute("download", `${name}.json`);
+                            document.body.appendChild(element);
+                            element.click();
+                            element.remove();
+                          }}
+                        >
+                          Download json
+                        </button>
+                        <button
+                          className="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(assetUri);
+                          }}
+                        >
+                          Copy AssetUri
+                        </button>
+                      </div>
+                    )}
+                    {recordType === "link" && (
+                      <div>
+                        <div className="empty_thumbnail" />
+                        <a href={`/inventory/v1/link/${ownerId}/${assetId}`}>
+                          {_.slice(name, 0, 256)}
+                        </a>
+                        <button
+                          className="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              `neosrec:///${ownerId}/${assetId}`
+                            );
+                          }}
+                        >
+                          Copy linkUrl
+                        </button>
+                      </div>
+                    )}
+                    {recordType === "directory" && (
+                      <div>
+                        <div className="empty_thumbnail" />
+                        <a href={`${currentDir}/${encodeURI(name)}`}>
+                          {_.slice(name, 0, 256)}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </ItemStyle>
+              );
+            }
+          )
+          .value()}
+      </GridStyle>
+    </div>
   );
 };
 
