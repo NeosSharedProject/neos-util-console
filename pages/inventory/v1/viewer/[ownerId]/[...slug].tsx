@@ -4,15 +4,51 @@ import useSWR from "swr";
 import styled from "styled-components";
 
 const GridStyle = styled.div`
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
 `;
 
 const ItemStyle = styled.div<{ backColor: string }>`
-  height: 25px;
   background-color: ${({ backColor }) => backColor};
-  padding: 12px;
-  margin: 8px;
+  border: 1px solid #333;
+  display: block;
+  clear: both;
+  width: 180px;
+  padding: 20px;
   .title {
+    display: block;
+    clear: both;
+    text-align: center;
+    color: #333;
+    font-size: 16px;
+  }
+  .empty_thumbnail {
+    width: 100% !important;
+    height: 180px !important;
+  }
+  .thumbnail {
+    width: 100% !important;
+    height: 180px !important;
+    background: #fff;
+    border: 2px solid #a3cfd6;
+  }
+  .label {
+    display: block;
+    width: 100%;
+    text-align: left;
+    color: rgb(0, 0, 0);
+    font-size: 14px;
+    padding: 10px 0;
+    line-height: 1.5;
+  }
+  .button {
+    clear: both;
+    overflow: hidden;
+    padding: 5px;
+    margin: 1px;
+    color: #fff;
+    font-size: 75%;
+    background: rgb(43, 50, 87);
   }
 `;
 
@@ -51,6 +87,7 @@ const Index = () => {
         assetUri: string;
         thumbnailUri: string;
         ownerId: string;
+        creationTime: string;
       }
     ]
   >(
@@ -62,9 +99,9 @@ const Index = () => {
   return (
     <GridStyle>
       {_(data)
-        .sortBy(({ recordType, name }) => [
+        .sortBy(({ recordType, name, creationTime }) => [
           _.get(orderMap, recordType, -1),
-          name,
+          recordType === "object" ? creationTime : name,
         ])
         .map(
           ({
@@ -73,6 +110,7 @@ const Index = () => {
             assetUri,
             thumbnailUri,
             ownerId: assetOwnerId,
+            creationTime,
           }) => {
             const assetId = _.last(_.split(assetUri, "/"));
             const ownerId = _.get(_.split(assetUri, "/"), 3, assetOwnerId);
@@ -84,9 +122,10 @@ const Index = () => {
                 <div className="title">
                   {recordType === "object" && (
                     <div>
-                      <img src={fixedThumbnailUri} width={25} height={25} />
+                      <img className="thumbnail" src={fixedThumbnailUri} />
                       <label>{_.slice(name, 0, 256)}</label>
                       <button
+                        className="button"
                         onClick={async () => {
                           const response = await fetch(
                             `https://decompress.kokoa.dev/?id=${_.first(
@@ -106,6 +145,7 @@ const Index = () => {
                         Download json
                       </button>
                       <button
+                        className="button"
                         onClick={() => {
                           navigator.clipboard.writeText(assetUri);
                         }}
@@ -116,10 +156,12 @@ const Index = () => {
                   )}
                   {recordType === "link" && (
                     <div>
+                      <div className="empty_thumbnail" />
                       <a href={`/inventory/v1/link/${ownerId}/${assetId}`}>
                         {_.slice(name, 0, 256)}
                       </a>
                       <button
+                        className="button"
                         onClick={() => {
                           navigator.clipboard.writeText(
                             `neosrec:///${ownerId}/${assetId}`
@@ -131,9 +173,12 @@ const Index = () => {
                     </div>
                   )}
                   {recordType === "directory" && (
-                    <a href={`${currentDir}/${encodeURI(name)}`}>
-                      {_.slice(name, 0, 256)}
-                    </a>
+                    <div>
+                      <div className="empty_thumbnail" />
+                      <a href={`${currentDir}/${encodeURI(name)}`}>
+                        {_.slice(name, 0, 256)}
+                      </a>
+                    </div>
                   )}
                 </div>
               </ItemStyle>
