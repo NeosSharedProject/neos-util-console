@@ -33,7 +33,6 @@ const Index = () => {
   );
   useEffect(() => {
     const { ownerId, path } = data ?? {};
-    console.log(ownerId, path);
     if (ownerId && path) {
       router.replace(`/inventory/v1/viewer/${ownerId}/${encodeURI(path)}`);
     }
