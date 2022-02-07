@@ -114,9 +114,14 @@ const Index = () => {
               ownerId: assetOwnerId,
               creationTime,
             }) => {
-              const assetId = _.first(_.split((_.last(_.split(assetUri, "/"))),"."));
-              const ownerId = _.get(_.split(assetUri, "/"), 3, assetOwnerId);
-              const neosrec = (`neosrec:///${ownerId}/${id}`);
+              const assetId = _.first(
+                _.split(_.last(_.split(assetUri, "/")), ".")
+              );
+              const ownerId =
+                recordType === "link"
+                  ? _.get(_.split(assetUri, "/"), 3, assetUri)
+                  : assetOwnerId;
+              const neosrecUri = `neosrec:///${ownerId}/${id}`;
               const fixedThumbnailUri =
                 "https://assets.neos.com/assets/" +
                 _.first(_.split(_.last(_.split(thumbnailUri, "/")), "."));
@@ -131,7 +136,7 @@ const Index = () => {
                           className="button"
                           onClick={async () => {
                             const response = await fetch(
-                              `https://assets.neos.com/assets/${assetId}`
+                              `neos/assets/${assetId}`
                             );
                             const data = await response.text();
                             const blob = new Blob([data]);
@@ -174,7 +179,7 @@ const Index = () => {
                         <button
                           className="button"
                           onClick={() => {
-                            navigator.clipboard.writeText(`neosrec:///${ownerId}/${id}`);
+                            navigator.clipboard.writeText(neosrecUri);
                           }}
                         >
                           Copy RecordUri
@@ -197,6 +202,14 @@ const Index = () => {
                         >
                           Copy linkUrl
                         </button>
+                        <button
+                          className="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(neosrecUri);
+                          }}
+                        >
+                          Copy RecordUri
+                        </button>
                       </div>
                     )}
                     {recordType === "directory" && (
@@ -205,6 +218,14 @@ const Index = () => {
                         <a href={`${currentDir}/${encodeURI(name)}`}>
                           {_.slice(name, 0, 256)}
                         </a>
+                        <button
+                          className="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(neosrecUri);
+                          }}
+                        >
+                          Copy RecordUri
+                        </button>
                       </div>
                     )}
                   </div>
