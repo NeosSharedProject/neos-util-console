@@ -13,7 +13,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
     );
     axios
       .get(
-        `https://www.neosvr-api.com/api/${ownerType}/${ownerId}/records?path=${fixedPath}`
+        `https://api.neos.com/api/${ownerType}/${ownerId}/records?path=${fixedPath}`
       )
       .then((response) => {
         console.log(response);

@@ -11,7 +11,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
       : "groups";
     axios
       .get(
-        `https://www.neosvr-api.com/api/${ownerType}/${ownerId}/records/${recordId}`
+        `https://api.neos.com/api/${ownerType}/${ownerId}/records/${recordId}`
       )
       .then((response) => {
         const { name, path } = response.data;
