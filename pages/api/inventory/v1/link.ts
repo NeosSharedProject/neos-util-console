@@ -3,7 +3,6 @@ import axios from "axios";
 import _ from "lodash";
 
 export default (req: NextApiRequest, res: NextApiResponse) => {
-  console.log("HELLO");
   if (req.method === "GET") {
     const { ownerId, recordId } = req.query;
     const ownerType = _.startsWith(ownerId as string, "U-")
