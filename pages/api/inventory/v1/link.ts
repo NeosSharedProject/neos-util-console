@@ -3,7 +3,6 @@ import axios from "axios";
 import _ from "lodash";
 
 export default (req: NextApiRequest, res: NextApiResponse) => {
-  console.log("HELLO");
   if (req.method === "GET") {
     const { ownerId, recordId } = req.query;
     const ownerType = _.startsWith(ownerId as string, "U-")
@@ -11,7 +10,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
       : "groups";
     axios
       .get(
-        `https://www.neosvr-api.com/api/${ownerType}/${ownerId}/records/${recordId}`
+        `https://api.neos.com/api/${ownerType}/${ownerId}/records/${recordId}`
       )
       .then((response) => {
         const { name, path } = response.data;

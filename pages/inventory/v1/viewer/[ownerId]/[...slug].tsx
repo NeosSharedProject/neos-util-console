@@ -106,6 +106,7 @@ const Index = () => {
           ])
           .map(
             ({
+              id,
               recordType,
               name,
               assetUri,
@@ -113,10 +114,16 @@ const Index = () => {
               ownerId: assetOwnerId,
               creationTime,
             }) => {
-              const assetId = _.last(_.split(assetUri, "/"));
-              const ownerId = _.get(_.split(assetUri, "/"), 3, assetOwnerId);
+              const assetId = _.first(
+                _.split(_.last(_.split(assetUri, "/")), ".")
+              );
+              const ownerId =
+                recordType === "link"
+                  ? _.get(_.split(assetUri, "/"), 3, assetUri)
+                  : assetOwnerId;
+              const neosrecUri = `neosrec:///${ownerId}/${id}`;
               const fixedThumbnailUri =
-                "https://cloudxstorage.blob.core.windows.net/assets/" +
+                "https://assets.neos.com/assets/" +
                 _.first(_.split(_.last(_.split(thumbnailUri, "/")), "."));
               return (
                 <ItemStyle backColor={_.get(colorMap, recordType, "skyblue")}>
@@ -129,9 +136,25 @@ const Index = () => {
                           className="button"
                           onClick={async () => {
                             const response = await fetch(
-                              `https://decompress.kokoa.dev/?id=${_.first(
-                                _.split(assetId, ".")
-                              )}`
+                              `neos/assets/${assetId}`
+                            );
+                            const data = await response.text();
+                            const blob = new Blob([data]);
+                            const element = document.createElement("a");
+                            element.href = window.URL.createObjectURL(blob);
+                            element.setAttribute("download", `${name}.7zbson`);
+                            document.body.appendChild(element);
+                            element.click();
+                            element.remove();
+                          }}
+                        >
+                          Download 7zbson
+                        </button>
+                        <button
+                          className="button"
+                          onClick={async () => {
+                            const response = await fetch(
+                              `https://decompress.kokoa.dev/?id=${assetId}`
                             );
                             const data = await response.text();
                             const blob = new Blob([data]);
@@ -153,6 +176,14 @@ const Index = () => {
                         >
                           Copy AssetUri
                         </button>
+                        <button
+                          className="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(neosrecUri);
+                          }}
+                        >
+                          Copy RecordUri
+                        </button>
                       </div>
                     )}
                     {recordType === "link" && (
@@ -171,6 +202,14 @@ const Index = () => {
                         >
                           Copy linkUrl
                         </button>
+                        <button
+                          className="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(neosrecUri);
+                          }}
+                        >
+                          Copy RecordUri
+                        </button>
                       </div>
                     )}
                     {recordType === "directory" && (
@@ -179,6 +218,14 @@ const Index = () => {
                         <a href={`${currentDir}/${encodeURI(name)}`}>
                           {_.slice(name, 0, 256)}
                         </a>
+                        <button
+                          className="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(neosrecUri);
+                          }}
+                        >
+                          Copy RecordUri
+                        </button>
                       </div>
                     )}
                   </div>
