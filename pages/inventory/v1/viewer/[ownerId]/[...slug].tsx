@@ -170,6 +170,25 @@ const Index = () => {
                         </button>
                         <button
                           className="button"
+                          onClick={async () => {
+                            const url = `/api/inventory/v1/neoscript?id=${_.first(
+                              _.split(assetId, ".")
+                            )}`;
+                            const response = await fetch(url);
+                            const data = await response.text();
+                            const blob = new Blob([data]);
+                            const element = document.createElement("a");
+                            element.href = window.URL.createObjectURL(blob);
+                            element.setAttribute("download", `${name}.tsx`);
+                            document.body.appendChild(element);
+                            element.click();
+                            element.remove();
+                          }}
+                        >
+                          Download neoscript component
+                        </button>
+                        <button
+                          className="button"
                           onClick={() => {
                             navigator.clipboard.writeText(assetUri);
                           }}
