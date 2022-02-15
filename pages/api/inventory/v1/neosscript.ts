@@ -137,10 +137,10 @@ function resolveSlot(slot, refCountMap, assets = [], addProp, deps = 0) {
     Children,
   } = slot;
 
-  const isInterface = Name.Data === "NeoscriptInterface" && deps === 1;
+  const isInterface = Name.Data === "NeosScriptInterface" && deps === 1;
 
-  const isParentAnchor = _.startsWith(Name.Data, "NeoscriptParentAnchor:");
-  const parentAnchorName = _.replace(Name.Data, "NeoscriptParentAnchor:", "");
+  const isParentAnchor = _.startsWith(Name.Data, "NeosScriptParentAnchor:");
+  const parentAnchorName = _.replace(Name.Data, "NeosScriptParentAnchor:", "");
   if (isParentAnchor) {
     addProp(parentAnchorName);
   }
@@ -271,9 +271,9 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
         const propDefine = _.join(propList, ",");
         res.send(
           `import React from "react";
-          import { RelayManager } from "lib/neoscript/util/RelayManager";
-          import { generateId } from "lib/neoscript/util";
-          import { Member } from "lib/neoscript/core/Member";
+          import { RelayManager } from "lib/neosScript/util/RelayManager";
+          import { generateId } from "lib/neosScript/util";
+          import { Member } from "lib/neosScript/core/Member";
           export default ({${propDefine}})=>{const relay = new RelayManager(); return (${mainString});}`
         );
       })

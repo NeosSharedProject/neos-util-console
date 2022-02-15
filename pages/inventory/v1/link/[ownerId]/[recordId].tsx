@@ -9,7 +9,6 @@ const Index = () => {
   if (typeof ownerId !== "string" || typeof recordId !== "string") {
     return <p>"error"</p>;
   }
-
   useLinkRedirect(ownerId, recordId);
 
   return <p>LOADING</p>;
