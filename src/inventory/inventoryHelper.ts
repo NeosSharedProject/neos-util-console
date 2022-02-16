@@ -2,38 +2,38 @@ import _ from "lodash";
 import useSWR from "swr";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { download, fetcher } from "../helper";
+import { download, fetcher, parseJson, useLocalStorage } from "../helper";
 
 export function getPath(slug: string | Array<string>) {
-  if (typeof slug == "string") {
+  if (typeof slug === "string") {
     return encodeURI(slug);
   }
   return _(slug)
     .map((text) => encodeURI(text))
     .join("/");
 }
-function getAssetOwnerId({ ownerId, recordType, assetUri }) {
+function getAssetOwnerId({ ownerId, recordType, assetUri }: RecordInterface) {
   return recordType === "link"
     ? _.get(_.split(assetUri, "/"), 3, assetUri)
     : ownerId;
 }
 
-function getWebThumbnailUri({ thumbnailUri }) {
+function getWebThumbnailUri({ thumbnailUri }: RecordInterface) {
   return thumbnailUri
     ? "https://assets.neos.com/assets/" +
         _.first(_.split(_.last(_.split(thumbnailUri, "/")), "."))
     : undefined;
 }
 
-function getRecordUri({ ownerId, id }) {
+function getRecordUri({ ownerId, id }: RecordInterface) {
   return `neosrec:///${ownerId}/${id}`;
 }
 
-function getAssetId({ assetUri }) {
+function getAssetId({ assetUri }: RecordInterface) {
   return _.first(_.split(_.last(_.split(assetUri, "/")), "."));
 }
 
-function getCurrentDirectoryName({ path }) {
+function getCurrentDirectoryName({ path }: RecordInterface) {
   return _.last(_.split(path, "\\"));
 }
 
@@ -47,6 +47,33 @@ function getViewerLink(record) {
     case "directory":
       const currentDirectoryName = getCurrentDirectoryName(record);
       return `${currentDirectoryName}/${encodeURI(name)}`;
+    default:
+      return undefined;
+  }
+}
+
+function getLink(record: RecordInterface): LinkInterface {
+  const { recordType, name, ownerId, id: recordId, path, assetUri } = record;
+  const assetOwnerId = getAssetOwnerId(record);
+  const assetId = getAssetId(record);
+
+  switch (recordType) {
+    case "link":
+      return {
+        name,
+        link: assetUri,
+        ownerId: assetOwnerId,
+        recordId: assetId,
+        path,
+      };
+    case "directory":
+      return {
+        name,
+        link: getRecordUri(record),
+        ownerId,
+        path,
+        recordId,
+      };
     default:
       return undefined;
   }
@@ -66,24 +93,22 @@ const recordKeys = [
   "path",
 ];
 
+interface RecordInterface {
+  id: string;
+  recordType: string;
+  name: string;
+  thumbnailUri: string;
+  creationTime: string;
+  ownerId: string;
+  ownerName: string;
+  lastModificationTime: string;
+  lastModifyingUserId: string;
+  path: string;
+  assetUri?: string;
+}
+
 export function useInventory(ownerId: string, path: string) {
-  const result = useSWR<
-    [
-      {
-        id: string;
-        recordType: string;
-        name: string;
-        assetUri: string;
-        thumbnailUri: string;
-        creationTime: string;
-        ownerId: string;
-        ownerName: string;
-        lastModificationTime: string;
-        lastModifyingUserId: string;
-        path: string;
-      }
-    ]
-  >(
+  const result = useSWR<RecordInterface[]>(
     ownerId && path
       ? `/api/inventory/v1/viewer?ownerId=${ownerId}&path=${path}&keys=${recordKeys}&useSort=true`
       : null,
@@ -119,6 +144,7 @@ export function useInventory(ownerId: string, path: string) {
       recordUri: getRecordUri(record),
       assetId: getAssetId(record),
       viewerLink: getViewerLink(record),
+      link: getLink(record),
     };
   });
   return { ...result, ...{ data } };
@@ -131,7 +157,6 @@ export function useLinkRedirect(ownerId: string, recordId: string) {
       : null,
     fetcher
   );
-
   const router = useRouter();
   useEffect(() => {
     const { ownerId, path } = data ?? {};
@@ -152,4 +177,38 @@ export async function downloadAssetAsNeosScript(assetId: string, name: string) {
     `/api/inventory/v1/neosscript?id=${_.first(_.split(assetId, "."))}`,
     `${name}.tsx`
   );
+}
+
+export interface LinkInterface {
+  name: string;
+  link: string;
+  ownerId: string;
+  recordId: string;
+  path: string;
+}
+
+export function useLocalLinks() {
+  const [state, setState] = useLocalStorage("Inventory.LocalLinks");
+  if (typeof setState === "string") {
+    throw new Error(
+      `type error. state is ${typeof state}. setState is ${typeof setState}`
+    );
+  }
+  const links = parseJson(typeof state === "string" ? state : "[]", []);
+  console.log(links);
+  const setLinks = (newLinks: LinkInterface[]) => {
+    setState(JSON.stringify(newLinks));
+  };
+  const getLink = (link: string): LinkInterface =>
+    _.find(links, ({ link: linkOfList }) => link == linkOfList);
+
+  const pushLink = (newLink: LinkInterface): void => {
+    if (!getLink(newLink.link)) {
+      setLinks([...links, newLink]);
+    }
+  };
+  const removeLink = (link: string): void => {
+    setLinks(_.reject(links, ({ link: linkOfList }) => link == linkOfList));
+  };
+  return { links, getLink, setLinks, pushLink, removeLink };
 }

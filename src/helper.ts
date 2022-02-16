@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 export async function download(targetUrl: string, fileName: string) {
   const response = await fetch(targetUrl);
   const data = await response.text();
@@ -17,4 +19,21 @@ export function copy(text: string) {
 export async function fetcher(url: string): Promise<any> {
   const response = await fetch(url);
   return response.json();
+}
+
+export function useLocalStorage(key: string) {
+  const [state, setState] = useState(localStorage.getItem(key));
+  const setStorage = (newData) => {
+    localStorage.setItem(key, newData);
+    setState(newData);
+  };
+  return [state, setStorage];
+}
+
+export function parseJson(str: string, fallbackValue: any = {}) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return fallbackValue;
+  }
 }
