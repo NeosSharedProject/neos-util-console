@@ -188,13 +188,14 @@ export interface LinkInterface {
 }
 
 export function useLocalLinks() {
-  const [state, setState] = useLocalStorage("LocalLinks");
-  if (typeof state !== "string" || typeof setState === "string") {
+  const [state, setState] = useLocalStorage("Inventory.LocalLinks");
+  if (typeof setState === "string") {
     throw new Error(
       `type error. state is ${typeof state}. setState is ${typeof setState}`
     );
   }
-  const links = parseJson(state, []);
+  const links = parseJson(typeof state === "string" ? state : "[]", []);
+  console.log(links);
   const setLinks = (newLinks: LinkInterface[]) => {
     setState(JSON.stringify(newLinks));
   };

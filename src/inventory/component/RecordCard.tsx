@@ -8,7 +8,7 @@ import {
   useLocalLinks,
   LinkInterface,
 } from "../inventoryHelper";
-import { copy } from "../../helper";
+import { copy, useLocalStorage } from "../../helper";
 
 const ItemStyle = styled.div<{ backColor: string; isFav: boolean }>`
   background-color: ${({ backColor }) => backColor};
@@ -135,6 +135,7 @@ export function RecordCard({
   const [showButton, setShowButton] = useState<boolean>(false);
   const { getLink, pushLink, removeLink } = useLocalLinks();
   const isFav = !!getLink(_.get(link, "link"));
+  const [modeState] = useLocalStorage("Util.Mode");
   return (
     <ItemStyle
       backColor={_.get(colorMap, recordType, "white")}
@@ -153,45 +154,54 @@ export function RecordCard({
               {!viewerLink && <label>{_.slice(name, 0, 256)}</label>}
               {viewerLink && <a href={viewerLink}>{_.slice(name, 0, 256)}</a>}
             </div>
-            {recordUri && (
-              <CardButton
-                name="Copy RecordUri"
-                func={() => {
-                  copy(recordUri);
-                }}
-              />
+            <CardButton
+              name="Copy RecordUri"
+              func={() => {
+                copy(recordUri);
+              }}
+            />
+            {(recordType === "link" || recordType === "directory") && (
+              <>
+                <CardButton
+                  name="Copy InventoryLink"
+                  func={() => {
+                    copy(recordType === "link" ? assetUri : recordUri);
+                  }}
+                />
+              </>
             )}
             {recordType === "object" && (
               <>
+                <CardButton
+                  name={"Copy AssetUri"}
+                  func={() => {
+                    copy(assetUri);
+                  }}
+                />
                 <CardButton
                   name="Download 7zbson"
                   func={() => {
                     downloadAssetAs7zbson(assetId, name);
                   }}
                 />
-                <CardButton
-                  name="Download json"
-                  func={() => {
-                    downloadAssetAsJson(assetId, name);
-                  }}
-                />
-                <CardButton
-                  name="Download NeosScript"
-                  func={() => {
-                    downloadAssetAsNeosScript(assetId, name);
-                  }}
-                />
+                {modeState == "advanced" && (
+                  <>
+                    <CardButton
+                      name="Download json"
+                      func={() => {
+                        downloadAssetAsJson(assetId, name);
+                      }}
+                    />
+                    <CardButton
+                      name="Download NeosScript"
+                      func={() => {
+                        downloadAssetAsNeosScript(assetId, name);
+                      }}
+                    />
+                  </>
+                )}
               </>
             )}
-            {recordType === "object" ||
-              (recordType === "link" && (
-                <CardButton
-                  name="Copy AssetUri"
-                  func={() => {
-                    copy(assetUri);
-                  }}
-                />
-              ))}
             {link && (
               <CardButton
                 name={isFav ? "Remove Local Bookmark" : "Save Local Bookmark"}

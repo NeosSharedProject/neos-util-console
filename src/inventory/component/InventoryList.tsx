@@ -33,6 +33,9 @@ export default function InventoryList() {
 
   return (
     <GridStyle>
+      <p>
+        {ownerId} / {decodeURI(path)}
+      </p>
       <ContentAreaStyle>
         {_.map(
           data,

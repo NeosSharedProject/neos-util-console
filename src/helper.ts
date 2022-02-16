@@ -24,8 +24,8 @@ export async function fetcher(url: string): Promise<any> {
 export function useLocalStorage(key: string) {
   const [state, setState] = useState(localStorage.getItem(key));
   const setStorage = (newData) => {
-    setState(newData);
     localStorage.setItem(key, newData);
+    setState(newData);
   };
   return [state, setStorage];
 }
