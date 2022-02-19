@@ -127,18 +127,20 @@ export function RecordCard({
         <TableCell align="right">{lastModifyingUserId}</TableCell>
       )}
       <TableCell align="right">
-        <IconButton
-          onClick={() => {
-            if (isFav) {
-              removeLink(link.link);
-            } else {
-              pushLink(link);
-            }
-          }}
-        >
-          {isFav && <StarIcon fontSize="small" />}
-          {!isFav && <StarBorderIcon fontSize="small" />}
-        </IconButton>
+        {recordType != "object" && (
+          <IconButton
+            onClick={() => {
+              if (isFav) {
+                removeLink(link.link);
+              } else {
+                pushLink(link);
+              }
+            }}
+          >
+            {isFav && <StarIcon fontSize="small" />}
+            {!isFav && <StarBorderIcon fontSize="small" />}
+          </IconButton>
+        )}
       </TableCell>
       <TableCell align="right">
         <IconButton onClick={handleMenuOpen}>
