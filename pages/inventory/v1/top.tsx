@@ -1,100 +1,286 @@
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/router";
 import _ from "lodash";
 import styled from "styled-components";
-import { useLocalLinks } from "../../../src/inventory/inventoryHelper";
+import {
+  getOwnerIdAndRecordIdFromRecordUri,
+  useLocalLinks,
+} from "../../../src/inventory/inventoryHelper";
+import {
+  Button,
+  Container,
+  Stack,
+  TextField,
+  Grid,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Collapse,
+  IconButton,
+  DialogTitle,
+  DialogContentText,
+  DialogContent,
+  DialogActions,
+  Dialog,
+} from "@mui/material";
+import ArrowRightIcon from "@mui/icons-material/ArrowRightAlt";
+import StarIcon from "@mui/icons-material/Star";
+import FolderIcon from "@mui/icons-material/Folder";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import DeleteIcon from "@mui/icons-material/Delete";
+import CloudIcon from "@mui/icons-material/Cloud";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 const TextFiledStyle = styled.input`
   width: 400px;
 `;
 
+function LinkItem({
+  name,
+  link,
+  ownerId,
+  path,
+  removeLink,
+}: {
+  name: string;
+  ownerId: string;
+  path: string;
+  recordId?: string;
+  removeLink?: (link: string) => void;
+  link?: string;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleOpen = () => {
+    router.push(`viewer/${ownerId}/${path}`);
+  };
+
+  return (
+    <ListItemButton sx={{ pl: 4 }}>
+      <ListItemIcon onClick={handleOpen}>
+        <FolderIcon />
+      </ListItemIcon>
+      <ListItemText
+        primary={name}
+        secondary={`${ownerId} / ${_.replace(path, /\\/g, " / ")}`}
+        onClick={handleOpen}
+      />
+      {Boolean(removeLink) && Boolean(link) && (
+        <>
+          <ListItemIcon>
+            <IconButton onClick={handleClickOpen}>
+              <DeleteIcon />
+            </IconButton>
+          </ListItemIcon>
+          <Dialog
+            fullScreen={fullScreen}
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="responsive-dialog-title"
+          >
+            <DialogTitle id="responsive-dialog-title">
+              {`Do you really want to remove "${name}" from your favorites?`}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText>{`${ownerId} / ${_.replace(
+                path,
+                /\\/g,
+                " / "
+              )} / ${name}`}</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button autoFocus onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  removeLink(link);
+                  handleClose();
+                }}
+                autoFocus
+                color={"error"}
+              >
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      )}
+    </ListItemButton>
+  );
+}
+
 const Index = () => {
   const router = useRouter();
+
+  const [linkText, setLinkText] = useState("");
+  const { ownerId: linkOwnerId, recordId: linkRecordId } =
+    getOwnerIdAndRecordIdFromRecordUri(linkText);
+  const linkTextIsValid =
+    _.startsWith(linkText, "neosrec:///") &&
+    (_.startsWith(linkOwnerId, "U-") || _.startsWith(linkOwnerId, "G-")) &&
+    _.startsWith(linkRecordId, "R-");
+  const linkTextFieldError = !(linkTextIsValid || !linkText);
+
   const { register, handleSubmit, getValues } = useForm();
   const { links, pushLink, getLink, removeLink } = useLocalLinks();
 
+  const [favoritesOpened, setFavoritesOpened] = React.useState<boolean>(true);
+  const [standardOpened, setStandardOpened] = React.useState<boolean>(true);
+
   return (
-    <div>
-      <div>
-        <a href="/inventory/v1/viewer/G-Neos/Inventory/Essential Tools">
-          Essential Tools
-        </a>
-      </div>
-      <div>
-        <a href="/inventory/v1/viewer/G-Neos/Inventory/Neos Essentials">
-          Neos Essentials
-        </a>
-      </div>
-      <div>
-        <a href="/inventory/v1/viewer/G-Shared-Project-rheni/Inventory/JP Publics">
-          JP Publics
-        </a>
-      </div>
-      <div>
-        <a href="/inventory/v1/viewer/U-rhenium/Inventory/rhenium Public">
-          rhenium Public
-        </a>
-      </div>
-      <p>Local Bookmark</p>
-      {_.map(links, ({ name, link, ownerId, recordId, path }) => (
-        <div>
-          <button
-            onClick={async () => {
-              if (window.confirm(`delete ${name}?`)) {
-                removeLink(link);
-              }
-            }}
-          >
-            Delete
-          </button>
-          <a href={`/inventory/v1/link/${ownerId}/${recordId}`}>
-            {name} （{ownerId}/{path}）
-          </a>
-        </div>
-      ))}
-      <div>
-        <form onSubmit={handleSubmit(async () => {})}>
-          <TextFiledStyle
-            type="text"
-            {...register("link")}
-            placeholder="neosrec:///U-xxxx/R-xxxx"
-          ></TextFiledStyle>
-          <button
-            onClick={async () => {
-              const { link } = getValues();
-              const strLst = _.split(link, "/");
-              const recordId = _.last(strLst);
-              const ownerId = _.get(strLst, _.size(strLst) - 2);
-              const sameLink = getLink(link);
-              if (!sameLink) {
-                const record = await (
-                  await fetch(
-                    `/api/inventory/v1/link?ownerId=${ownerId}&recordId=${recordId}`
-                  )
-                ).json();
-                const { name, path } = record;
-                pushLink({ link, ownerId, recordId, path, name });
-              } else {
-                window.alert(`"${sameLink.name}" is already exists.`);
-              }
-            }}
-          >
-            Add
-          </button>
-          <button
+    <Container sx={{ paddingTop: 6 }}>
+      <Stack spacing={2}>
+        <Grid container spacing={2}>
+          <Grid item xs={8}>
+            <Stack>
+              <TextField
+                id="standard-basic"
+                label={
+                  Boolean(linkText)
+                    ? "inventory link"
+                    : "neosrec:///U-xxxx/R-xxxx"
+                }
+                variant="standard"
+                color={linkTextFieldError ? "primary" : "error"}
+                value={linkText}
+                onChange={(event) => {
+                  setLinkText(event.target.value);
+                }}
+                error={linkTextFieldError}
+                helperText={linkTextFieldError ? "neosrec///U-xxxx/R-xxxx" : ""}
+              />
+            </Stack>
+          </Grid>
+          <Grid item xs={2}>
+            <Stack>
+              <Button
+                variant="contained"
+                endIcon={<ArrowRightIcon />}
+                disabled={!linkTextIsValid}
+                onClick={() => {
+                  router.replace(
+                    `/inventory/v1/link/${linkOwnerId}/${linkRecordId}`
+                  );
+                }}
+              >
+                Open
+              </Button>
+            </Stack>
+          </Grid>
+          <Grid item xs={2}>
+            <Stack>
+              <Button
+                variant="contained"
+                endIcon={<StarIcon />}
+                disabled={!linkTextIsValid}
+                onClick={async () => {
+                  const sameLink = getLink(linkText);
+                  if (!sameLink) {
+                    const record = await (
+                      await fetch(
+                        `/api/inventory/v1/link?ownerId=${linkOwnerId}&recordId=${linkRecordId}`
+                      )
+                    ).json();
+                    const { name, path } = record;
+                    pushLink({
+                      link: linkText,
+                      ownerId: linkOwnerId,
+                      recordId: linkRecordId,
+                      path,
+                      name,
+                    });
+                  } else {
+                    window.alert(`"${sameLink.name}" is already exists.`);
+                  }
+                }}
+              >
+                Favorite
+              </Button>
+            </Stack>
+          </Grid>
+        </Grid>
+        <List component="nav" aria-label="main mailbox folders">
+          <ListItemButton
             onClick={() => {
-              const { link } = getValues();
-              const strLst = _.split(link, "/");
-              const recordId = _.last(strLst);
-              const ownerId = _.get(strLst, _.size(strLst) - 2);
-              router.replace(`/inventory/v1/link/${ownerId}/${recordId}`);
+              setFavoritesOpened(!favoritesOpened);
             }}
           >
-            Go
-          </button>
-        </form>
-      </div>
-    </div>
+            <ListItemIcon>
+              <StarIcon />
+            </ListItemIcon>
+            <ListItemText primary={`Favorites (${_.size(links)})`} />
+            {favoritesOpened ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </ListItemButton>
+          <Collapse in={favoritesOpened} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              {_.map(links, (link) => (
+                <LinkItem
+                  {...link}
+                  removeLink={removeLink}
+                  key={_.get(link, "recordId")}
+                />
+              ))}
+            </List>
+          </Collapse>
+          <ListItemButton
+            onClick={() => {
+              setStandardOpened(!standardOpened);
+            }}
+          >
+            <ListItemIcon>
+              <CloudIcon />
+            </ListItemIcon>
+            <ListItemText primary="Common (5)" />
+            {favoritesOpened ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </ListItemButton>
+          <Collapse in={standardOpened} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <LinkItem
+                name="Neos Essentials"
+                ownerId="G-Neos"
+                path="Inventory\Essential Tools"
+              />
+              <LinkItem
+                name="Essential Tools"
+                ownerId="G-Neos"
+                path="Inventory\Essential Tools"
+              />
+              <LinkItem
+                name="Creator Jam Public"
+                ownerId="U-Medra"
+                path="Inventory\CJ\Creator Jam Public"
+              />
+              <LinkItem
+                name="JP Publics"
+                ownerId="G-Shared-Project-rheni"
+                path="Inventory\JP Publics"
+              />
+              <LinkItem
+                name="1Public Folders"
+                ownerId="U-Staccato"
+                path="Inventory\1Public Folders"
+              />
+            </List>
+          </Collapse>
+        </List>
+      </Stack>
+    </Container>
   );
 };
 
