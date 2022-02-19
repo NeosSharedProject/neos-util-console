@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { useRouter } from "next/router";
 import { useLinkRedirect } from "../../../../../src/inventory/inventoryHelper";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 const Index = () => {
   const router = useRouter();
@@ -11,7 +12,14 @@ const Index = () => {
   }
   useLinkRedirect(ownerId, recordId);
 
-  return <p>LOADING</p>;
+  return (
+    <Backdrop
+      sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      open={true}
+    >
+      <CircularProgress color="inherit" />
+    </Backdrop>
+  );
 };
 
 export default Index;

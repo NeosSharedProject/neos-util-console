@@ -12,7 +12,7 @@ export async function download(targetUrl: string, fileName: string) {
   element.remove();
 }
 
-export function copy(text: string) {
+export function copy(text: string): void {
   navigator.clipboard.writeText(text);
 }
 
