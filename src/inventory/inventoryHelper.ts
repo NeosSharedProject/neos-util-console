@@ -34,7 +34,7 @@ function getAssetId({ assetUri }: RecordInterface) {
 }
 
 function getCurrentDirectoryName({ path }: RecordInterface) {
-  return _.last(_.split(path, "\\"));
+  return _.last(_.split(path, /\\|\//));
 }
 
 function getViewerLink(record) {
@@ -161,7 +161,11 @@ export function useLinkRedirect(ownerId: string, recordId: string) {
   useEffect(() => {
     const { ownerId, path } = data ?? {};
     if (ownerId && path) {
-      router.replace(`/inventory/v1/viewer/${ownerId}/${encodeURI(path)}`);
+      router.replace(
+        `/inventory/v1/viewer/${ownerId}/${encodeURI(
+          _.replace(path, /\\/g, "/")
+        )}`
+      );
     }
   }, [data]);
 }
@@ -195,7 +199,6 @@ export function useLocalLinks() {
     );
   }
   const links = parseJson(typeof state === "string" ? state : "[]", []);
-  console.log(links);
   const setLinks = (newLinks: LinkInterface[]) => {
     setState(JSON.stringify(newLinks));
   };
