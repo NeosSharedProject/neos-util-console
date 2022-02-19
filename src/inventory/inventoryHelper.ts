@@ -4,6 +4,13 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { download, fetcher, parseJson, useLocalStorage } from "../helper";
 
+export function getOwnerIdAndRecordIdFromRecordUri(recordUri: string) {
+  const strList = _.split(recordUri, "/");
+  const recordId = _.last(strList);
+  const ownerId = _.get(strList, _.size(strList) - 2);
+  return { ownerId: ownerId, recordId: recordId };
+}
+
 export function getPath(slug: string | Array<string>) {
   if (typeof slug === "string") {
     return encodeURI(slug);
@@ -148,6 +155,10 @@ export function useInventory(ownerId: string, path: string) {
     };
   });
   return { ...result, ...{ data } };
+}
+
+export function useInventoryLinkActive(ownerId: string, path: string) {
+  return useInventory(ownerId, path);
 }
 
 export function useLinkRedirect(ownerId: string, recordId: string) {

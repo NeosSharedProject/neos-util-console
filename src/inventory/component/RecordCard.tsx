@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import _ from "lodash";
-import styled from "styled-components";
 import {
   downloadAssetAs7zbson,
   downloadAssetAsJson,
@@ -9,101 +8,28 @@ import {
   LinkInterface,
 } from "../inventoryHelper";
 import { copy, useLocalStorage } from "../../helper";
-
-const ItemStyle = styled.div<{ backColor: string; isFav: boolean }>`
-  background-color: ${({ backColor }) => backColor};
-  border: 2px solid ${({ backColor }) => backColor};
-  ${({ isFav }) => (isFav ? "border: 2px solid orange;" : "")}display: block;
-  clear: both;
-  width: 200px;
-  height: 200px;
-  padding: 20px;
-  margin: 2px;
-`;
-
-const ContentAreaStyle = styled.div`
-  overflow: hidden;
-  height: 100%;
-  padding: 5px;
-`;
-
-const ThumbnailStyle = styled.img`
-  border-radius: 15px;
-  width: 100% !important;
-  height: 180px !important;
-  background: #fff;
-`;
-
-const TitleAreaStyle = styled.div`
-  overflow: hidden;
-  width: 100%;
-  display: block;
-  clear: both;
-  text-align: center;
-  color: #333;
-  font-size: 16px;
-  .label {
-    display: block;
-    width: 100%;
-    text-align: left;
-    color: rgb(0, 0, 0);
-    font-size: 14px;
-    padding: 10px 0;
-    line-height: 1.5;
-  }
-`;
-
-const ControlPanelStyle = styled.div`
-  position: absolute;
-  margin-left: 130px;
-  margin-top: 50px;
-  background: #ccc;
-  display: flex;
-  flex-direction: column;
-  width: 200px;
-  border-radius: 3px;
-  padding: 10px;
-  .title {
-    height: 50px;
-    overflow: hidden;
-  }
-  &:before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -30px;
-    right: 220px;
-    margin-top: -15px;
-    border: 15px solid transparent;
-    border-right: 15px solid #ccc;
-  }
-`;
-
-const CardButtonStyle = styled.button`
-  clear: both;
-  overflow: hidden;
-  padding: 5px;
-  margin: 1px;
-  color: #fff;
-  font-size: 75%;
-  background: rgb(43, 50, 87);
-  &:hover {
-    background: rgb(103, 110, 147);
-  }
-`;
-
-function CardButton({ name, func }) {
-  return (
-    <CardButtonStyle
-      className="button"
-      onClick={() => {
-        func();
-      }}
-    >
-      {name}
-    </CardButtonStyle>
-  );
-}
+import {
+  Alert,
+  TableRow,
+  TableCell,
+  IconButton,
+  MenuList,
+  Divider,
+  Menu,
+  Snackbar,
+  Link,
+} from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import FolderIcon from "@mui/icons-material/Folder";
+import CopyIcon from "@mui/icons-material/ContentCopy";
+import DownloadIcon from "@mui/icons-material/Download";
+import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
+import MoreHorizTwoToneIcon from "@mui/icons-material/MoreHorizTwoTone";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import FolderSharedIcon from "@mui/icons-material/FolderShared";
+import moment from "moment";
+import MenuButtonWithLoading from "../../common/component/MenuButtonWithLoading";
 
 interface CardInput {
   recordType: string;
@@ -114,13 +40,12 @@ interface CardInput {
   assetId?: string;
   assetUri?: string;
   link?: LinkInterface;
+  ownerName: string;
+  lastModificationTime: string;
+  lastModifyingUserId: string;
+  assetOwnerId: string;
+  creationTime: string;
 }
-
-const colorMap = {
-  directory: "#ffeda8",
-  link: "#ffdd9e",
-  object: "#eefaff",
-};
 
 export function RecordCard({
   recordType,
@@ -131,97 +56,184 @@ export function RecordCard({
   assetId,
   assetUri,
   link,
+  ownerName,
+  lastModificationTime,
+  lastModifyingUserId,
+  assetOwnerId,
+  creationTime,
 }: CardInput) {
   const [showButton, setShowButton] = useState<boolean>(false);
   const { getLink, pushLink, removeLink } = useLocalLinks();
   const isFav = !!getLink(_.get(link, "link"));
   const [modeState] = useLocalStorage("Util.Mode");
+
+  const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
+    null
+  );
+  const menuOpened = Boolean(menuAnchorEl);
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const [snackbarMessage, setSnackbarMessage] = React.useState<string | null>(
+    null
+  );
+  const handleSetSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+  };
+  const handleCloseSnackbar = () => {
+    setSnackbarMessage(null);
+  };
+
   return (
-    <ItemStyle
-      backColor={_.get(colorMap, recordType, "white")}
-      isFav={isFav}
-      onMouseEnter={() => {
-        setShowButton(true);
-      }}
-      onMouseLeave={() => {
-        setShowButton(false);
-      }}
-    >
-      <ContentAreaStyle>
-        {showButton && (
-          <ControlPanelStyle>
-            <div className="title">
-              {!viewerLink && <label>{_.slice(name, 0, 256)}</label>}
-              {viewerLink && <a href={viewerLink}>{_.slice(name, 0, 256)}</a>}
-            </div>
-            <CardButton
-              name="Copy RecordUri"
-              func={() => {
+    <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }} hover>
+      <TableCell scope="row">
+        {(() => {
+          switch (recordType) {
+            case "directory":
+              return (
+                <Link color={"rgba(0, 0, 0, 0.54)"} href={viewerLink}>
+                  <FolderIcon />
+                </Link>
+              );
+            case "link":
+              return (
+                <Link color={"rgba(0, 0, 0, 0.54)"} href={viewerLink}>
+                  <FolderSharedIcon />
+                </Link>
+              );
+            case "object":
+              return <img src={webThumbnailUri} width={30} height={30} />;
+            default:
+              return null;
+          }
+        })()}
+      </TableCell>
+      <TableCell scope="row">
+        {recordType == "object" && _.slice(name, 0, 256)}
+        {recordType != "object" && (
+          <Link color={"#000"} href={viewerLink}>
+            {_.slice(name, 0, 256)}
+          </Link>
+        )}
+      </TableCell>
+      <TableCell align="right">
+        {moment(creationTime).format("YYYY M/D HH:mm")}
+      </TableCell>
+      {modeState === "advanced" && (
+        <TableCell align="right">{lastModifyingUserId}</TableCell>
+      )}
+      <TableCell align="right">
+        <IconButton
+          onClick={() => {
+            if (isFav) {
+              removeLink(link.link);
+            } else {
+              pushLink(link);
+            }
+          }}
+        >
+          {isFav && <StarIcon fontSize="small" />}
+          {!isFav && <StarBorderIcon fontSize="small" />}
+        </IconButton>
+      </TableCell>
+      <TableCell align="right">
+        <IconButton onClick={handleMenuOpen}>
+          <MoreHorizTwoToneIcon />
+        </IconButton>
+
+        <Menu
+          open={menuOpened}
+          onClose={handleMenuClose}
+          anchorEl={menuAnchorEl}
+        >
+          <MenuList>
+            <MenuButtonWithLoading
+              handleAction={async () => {
                 copy(recordUri);
+                setSnackbarMessage("Copy RecordUri");
               }}
+              SuccessIcon={CheckIcon}
+              DefaultIcon={CopyIcon}
+              name={"Copy RecordUri"}
             />
-            {(recordType === "link" || recordType === "directory") && (
-              <>
-                <CardButton
-                  name="Copy InventoryLink"
-                  func={() => {
-                    copy(recordType === "link" ? assetUri : recordUri);
-                  }}
-                />
-              </>
-            )}
             {recordType === "object" && (
               <>
-                <CardButton
-                  name={"Copy AssetUri"}
-                  func={() => {
+                <MenuButtonWithLoading
+                  handleAction={async () => {
                     copy(assetUri);
+                    setSnackbarMessage("Copy AssetUri");
                   }}
+                  SuccessIcon={CheckIcon}
+                  DefaultIcon={CopyIcon}
+                  name={"Copy AssetUri"}
                 />
-                <CardButton
-                  name="Download 7zbson"
-                  func={() => {
-                    downloadAssetAs7zbson(assetId, name);
+                <Divider />
+                <MenuButtonWithLoading
+                  handleAction={async () => {
+                    await downloadAssetAs7zbson(assetId, name);
+                    setSnackbarMessage("Download 7zbson");
                   }}
+                  SuccessIcon={DownloadDoneIcon}
+                  DefaultIcon={DownloadIcon}
+                  name={"Download 7zbson"}
                 />
-                {modeState == "advanced" && (
+                {modeState === "advanced" && (
                   <>
-                    <CardButton
-                      name="Download json"
-                      func={() => {
-                        downloadAssetAsJson(assetId, name);
+                    <MenuButtonWithLoading
+                      handleAction={async () => {
+                        await downloadAssetAsJson(assetId, name);
+                        setSnackbarMessage("Download Json");
                       }}
+                      SuccessIcon={DownloadDoneIcon}
+                      DefaultIcon={DownloadIcon}
+                      name={"Download Json"}
                     />
-                    <CardButton
-                      name="Download NeosScript"
-                      func={() => {
-                        downloadAssetAsNeosScript(assetId, name);
+                    <MenuButtonWithLoading
+                      handleAction={async () => {
+                        await downloadAssetAsNeosScript(assetId, name);
+                        setSnackbarMessage("Download NeosScript");
                       }}
+                      SuccessIcon={DownloadDoneIcon}
+                      DefaultIcon={DownloadIcon}
+                      name={"Download NeosScript"}
                     />
                   </>
                 )}
               </>
             )}
-            {link && (
-              <CardButton
-                name={isFav ? "Remove Local Bookmark" : "Save Local Bookmark"}
-                func={() => {
-                  if (isFav) {
-                    removeLink(link.link);
-                  } else {
-                    pushLink(link);
-                  }
-                }}
-              />
+            {recordType != "object" && (
+              <>
+                <MenuButtonWithLoading
+                  handleAction={async () => {
+                    copy(recordType === "link" ? assetUri : recordUri);
+                    setSnackbarMessage("Copy InventoryLink");
+                  }}
+                  SuccessIcon={CheckIcon}
+                  DefaultIcon={CopyIcon}
+                  name={"Copy InventoryLink"}
+                />
+              </>
             )}
-          </ControlPanelStyle>
-        )}
-        {webThumbnailUri && <ThumbnailStyle src={webThumbnailUri} />}
-        <TitleAreaStyle>
-          {!viewerLink && <label>{_.slice(name, 0, 256)}</label>}
-          {viewerLink && <a href={viewerLink}>{_.slice(name, 0, 256)}</a>}
-        </TitleAreaStyle>
-      </ContentAreaStyle>
-    </ItemStyle>
+          </MenuList>
+        </Menu>
+        <Snackbar
+          open={Boolean(snackbarMessage)}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </TableCell>
+    </TableRow>
   );
 }
