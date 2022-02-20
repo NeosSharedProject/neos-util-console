@@ -16,7 +16,7 @@ export default function Home() {
         <div className="grid">
           <a href="/inventory/v1/top" className="card">
             <h3>inventoryViewer &rarr;</h3>
-            <p>view Public Folder and Download item as json.</p>
+            <p>You can browse public folders.</p>
           </a>
         </div>
       </main>
