@@ -45,6 +45,7 @@ function LinkItem({
   ownerId,
   path,
   removeLink,
+  recordId,
 }: {
   name: string;
   ownerId: string;
@@ -67,7 +68,13 @@ function LinkItem({
   };
 
   const handleOpen = () => {
-    router.push(`viewer/${ownerId}/${path}`);
+    //https://github.com/rheniumNV/neos-util-console/issues/17
+    //一旦使えるようにする。
+    if (recordId) {
+      router.push(`link/${ownerId}/${recordId}`);
+    } else {
+      router.push(`viewer/${ownerId}/${path}/${name}`);
+    }
   };
 
   return (
@@ -254,27 +261,27 @@ const Index = () => {
               <LinkItem
                 name="Neos Essentials"
                 ownerId="G-Neos"
-                path="Inventory\Neos Essentials"
+                path="Inventory"
               />
               <LinkItem
                 name="Essential Tools"
                 ownerId="G-Neos"
-                path="Inventory\Essential Tools"
+                path="Inventory"
               />
               <LinkItem
                 name="Creator Jam Public"
                 ownerId="U-Medra"
-                path="Inventory\CJ\Creator Jam Public"
+                path="Inventory\CJ"
               />
               <LinkItem
                 name="JP Publics"
                 ownerId="G-Shared-Project-rheni"
-                path="Inventory\JP Publics"
+                path="Inventory"
               />
               <LinkItem
                 name="1Public Folders"
                 ownerId="U-Staccato"
-                path="Inventory\1Public Folders"
+                path="Inventory"
               />
             </List>
           </Collapse>
