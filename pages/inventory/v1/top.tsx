@@ -254,7 +254,7 @@ const Index = () => {
               <LinkItem
                 name="Neos Essentials"
                 ownerId="G-Neos"
-                path="Inventory\Essential Tools"
+                path="Inventory\Neos Essentials"
               />
               <LinkItem
                 name="Essential Tools"
