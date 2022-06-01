@@ -12,7 +12,11 @@ export default function AppBarTop() {
   router.basePath;
   const appCode = _.get(_.split(router.pathname, "/"), 1);
   const appInfo = _.get(
-    { inventory: { name: "InventoryViewer", link: "/inventory/v1/top" } },
+    {
+      inventory: { name: "InventoryViewer", link: "/inventory/v1/top" },
+      session: { name: "SessionViewer", link: "/session/v1/top" },
+    },
+
     appCode
   );
   return (
