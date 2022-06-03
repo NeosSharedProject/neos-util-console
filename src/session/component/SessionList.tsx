@@ -14,16 +14,10 @@ export default function Index(_prop) {
 
   return (
     <Container sx={{ paddingTop: 6, paddingBottom: 6 }}>
-      <Grid
-        container
-        spacing={2}
-        alignItems={"center"}
-        justifyItems={"center"}
-        justifyContent={"center"}
-      >
-        {_.map(sessions ?? [], (session) => {
+      <Grid container spacing={2}>
+        {_.map(sessions ?? [], (session, index) => {
           return (
-            <Grid item key={session.id}>
+            <Grid item key={index}>
               <SessionCard session={session}></SessionCard>
             </Grid>
           );

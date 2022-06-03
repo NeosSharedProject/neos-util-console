@@ -13,7 +13,7 @@ import ShareIcon from "@mui/icons-material/ArrowRightAlt";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import _ from "lodash";
 import { Link } from "@mui/material";
-import { copy } from "../../helper";
+import { copy, eraseNeosRichTextTag } from "../../helper";
 
 const ExpandMore = styled((props: any) => {
   const { expand, ...other } = props;
@@ -41,6 +41,8 @@ export default function SessionCard({ session }) {
   } = session;
   const [expanded, setExpanded] = React.useState(false);
 
+  const displayName = _.join(_.slice(eraseNeosRichTextTag(name), 0, 256), "");
+
   const sessionUrl = `http://cloudx.azurewebsites.net/open/session/${sessionId}`;
 
   const handleExpandClick = () => {
@@ -51,10 +53,15 @@ export default function SessionCard({ session }) {
     <Card sx={{ maxWidth: 345 }}>
       <CardHeader
         sx={{ height: 100, fontSize: 12 }}
-        title={_.slice(name, 0, 256)}
+        title={displayName}
         subheader={`${hostUsername} ${headlessHost ? "(Headless)" : ""}`}
       />
-      <CardMedia component="img" height="194" image={thumbnail} alt={name} />
+      <CardMedia
+        component="img"
+        height="194"
+        image={thumbnail}
+        alt={displayName}
+      />
       <CardContent>
         <Typography variant="body2" color="text.secondary">
           {`${totalActiveUsers}/${maxUsers} `}
@@ -91,9 +98,13 @@ export default function SessionCard({ session }) {
         <CardContent>
           {_.map(
             _.sortBy(sessionUsers, ({ isPresent }) => !isPresent),
-            ({ username, isPresent }) => {
+            ({ username, isPresent }, index) => {
               return (
-                <Typography paragraph color={isPresent ? "black" : "gray"}>
+                <Typography
+                  key={index}
+                  paragraph
+                  color={isPresent ? "black" : "gray"}
+                >
                   {username}
                 </Typography>
               );

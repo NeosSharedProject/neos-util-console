@@ -7,7 +7,7 @@ import {
   useLocalLinks,
   LinkInterface,
 } from "../inventoryHelper";
-import { copy, useLocalStorage } from "../../helper";
+import { copy, eraseNeosRichTextTag, useLocalStorage } from "../../helper";
 import {
   Alert,
   TableRow,
@@ -30,6 +30,7 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import FolderSharedIcon from "@mui/icons-material/FolderShared";
 import moment from "moment";
 import MenuButtonWithLoading from "../../common/component/MenuButtonWithLoading";
+import { useRouter } from "next/router";
 
 interface CardInput {
   recordType: string;
@@ -66,6 +67,9 @@ export function RecordCard({
   const { getLink, pushLink, removeLink } = useLocalLinks();
   const isFav = !!getLink(_.get(link, "link"));
   const [modeState] = useLocalStorage("Util.Mode");
+  const router = useRouter();
+
+  const displayName = _.slice(eraseNeosRichTextTag(name), 0, 256);
 
   const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
     null
@@ -113,10 +117,10 @@ export function RecordCard({
         })()}
       </TableCell>
       <TableCell scope="row">
-        {recordType == "object" && _.slice(name, 0, 256)}
+        {recordType == "object" && displayName}
         {recordType != "object" && (
           <Link color={"#000"} href={viewerLink}>
-            {_.slice(name, 0, 256)}
+            {displayName}
           </Link>
         )}
       </TableCell>
