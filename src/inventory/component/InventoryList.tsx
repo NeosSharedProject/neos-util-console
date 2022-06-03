@@ -68,12 +68,19 @@ export default function InventoryList() {
             const path = _.join(_.slice(slug, 0, index + 1), "/");
             if (index + 1 === _.size(slug)) {
               return (
-                <Typography color="text.primary">{`${str}(${_.size(
+                <Typography key={index} color="text.primary">{`${str}(${_.size(
                   data
                 )})`}</Typography>
               );
             } else {
-              return <InventoryLink name={str} ownerId={ownerId} path={path} />;
+              return (
+                <InventoryLink
+                  key={index}
+                  name={str}
+                  ownerId={ownerId}
+                  path={path}
+                />
+              );
             }
           })}
         </Breadcrumbs>
