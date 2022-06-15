@@ -12,13 +12,16 @@ app.prepare().then(() => {
   const server = express();
 
   server.use(
-    "/neos/asset",
+    "/neos/assets/",
     createProxyMiddleware({
-      target: "https://asset.neos.com/",
-      pathRewrite: {
-        "^/neos/asset": "",
-      },
+      target: "https://assets.neos.com/assets",
       changeOrigin: true,
+        logLevel: 'debug',
+      pathRewrite: function(path, req) {
+        let newPath = path.replace("/neos/assets/","");
+        console.log(newPath)
+        return newPath;
+      },
     })
   );
 

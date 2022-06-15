@@ -12,6 +12,17 @@ export async function download(targetUrl: string, fileName: string) {
   element.remove();
 }
 
+export async function downloadBinary(targetUrl: string, fileName: string) {
+  const response = await fetch(targetUrl);
+  const blob = await response.blob();
+  const element = document.createElement("a");
+  element.href = window.URL.createObjectURL(blob);
+  element.setAttribute("download", fileName);
+  document.body.appendChild(element);
+  element.click();
+  element.remove();
+}
+
 export function copy(text: string): void {
   navigator.clipboard.writeText(text);
 }

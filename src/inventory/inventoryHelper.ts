@@ -2,7 +2,7 @@ import _ from "lodash";
 import useSWR from "swr";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { download, fetcher, parseJson, useLocalStorage } from "../helper";
+import {download, downloadBinary, fetcher, parseJson, useLocalStorage} from "../helper";
 
 export function getOwnerIdAndRecordIdFromRecordUri(recordUri: string) {
   const strList = _.split(recordUri, "/");
@@ -182,7 +182,7 @@ export function useLinkRedirect(ownerId: string, recordId: string) {
 }
 
 export async function downloadAssetAs7zbson(assetId: string, name: string) {
-  await download(`neos/assets/${assetId}`, `${name}.7zbson`);
+  await downloadBinary(`/neos/assets/${assetId}`, `${name}.7zbson`);
 }
 export async function downloadAssetAsJson(assetId: string, name: string) {
   await download(`https://decompress.kokoa.dev/?id=${assetId}`, `${name}.json`);
