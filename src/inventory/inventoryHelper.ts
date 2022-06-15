@@ -182,7 +182,7 @@ export function useLinkRedirect(ownerId: string, recordId: string) {
 }
 
 export async function downloadAssetAs7zbson(assetId: string, name: string) {
-  await downloadBinary(`neos/assets/${assetId}`, `${name}.7zbson`);
+  await downloadBinary(`/neos/assets/${assetId}`, `${name}.7zbson`);
 }
 export async function downloadAssetAsJson(assetId: string, name: string) {
   await download(`https://decompress.kokoa.dev/?id=${assetId}`, `${name}.json`);
