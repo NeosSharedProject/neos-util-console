@@ -18,6 +18,10 @@ export default function Home() {
             <h3>inventoryViewer &rarr;</h3>
             <p>You can browse public folders.</p>
           </a>
+          <a href="/session/v1/top" className="card">
+            <h3>SessionViewer &rarr;</h3>
+            <p>view Public Sessions.</p>
+          </a>
         </div>
       </main>
 
@@ -149,21 +153,6 @@ export default function Home() {
             width: 100%;
             flex-direction: column;
           }
-        }
-      `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
         }
       `}</style>
     </div>
