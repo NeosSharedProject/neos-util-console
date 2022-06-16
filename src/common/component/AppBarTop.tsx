@@ -15,6 +15,7 @@ export default function AppBarTop() {
     {
       inventory: { name: "InventoryViewer", link: "/inventory/v1/top" },
       session: { name: "SessionViewer", link: "/session/v1/top" },
+      inspector: { name: "Inspector" },
     },
 
     appCode
