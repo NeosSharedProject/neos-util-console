@@ -25,6 +25,8 @@ import CopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
 import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
 import MoreHorizTwoToneIcon from "@mui/icons-material/MoreHorizTwoTone";
+import InspectIcon from "@mui/icons-material/ManageSearch";
+import AnalyzeIcon from "@mui/icons-material/FindInPage";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import FolderSharedIcon from "@mui/icons-material/FolderShared";
@@ -206,6 +208,24 @@ export function RecordCard({
                       SuccessIcon={DownloadDoneIcon}
                       DefaultIcon={DownloadIcon}
                       name={"Download NeosScript"}
+                    />
+                    <MenuButtonWithLoading
+                      handleAction={async () => {
+                        window.open(`/inspector/v1/viewer?assetId=${assetId}`);
+                      }}
+                      SuccessIcon={DownloadDoneIcon}
+                      DefaultIcon={InspectIcon}
+                      name={"Inspect β"}
+                    />
+                    <MenuButtonWithLoading
+                      handleAction={async () => {
+                        window.open(
+                          `/inspector/v1/analyzer?assetId=${assetId}`
+                        );
+                      }}
+                      SuccessIcon={DownloadDoneIcon}
+                      DefaultIcon={AnalyzeIcon}
+                      name={"Analyze β"}
                     />
                   </>
                 )}
