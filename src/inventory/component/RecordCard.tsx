@@ -159,15 +159,17 @@ export function RecordCard({
           anchorEl={menuAnchorEl}
         >
           <MenuList>
-            <MenuButtonWithLoading
-              handleAction={async () => {
-                copy(recordUri);
-                setSnackbarMessage("Copy RecordUri");
-              }}
-              SuccessIcon={CheckIcon}
-              DefaultIcon={CopyIcon}
-              name={"Copy RecordUri"}
-            />
+            {modeState === "advanced" && (
+              <MenuButtonWithLoading
+                handleAction={async () => {
+                  copy(recordUri);
+                  setSnackbarMessage("Copy RecordUri");
+                }}
+                SuccessIcon={CheckIcon}
+                DefaultIcon={CopyIcon}
+                name={"Copy RecordUri"}
+              />
+            )}
             {recordType === "object" && (
               <>
                 <MenuButtonWithLoading
