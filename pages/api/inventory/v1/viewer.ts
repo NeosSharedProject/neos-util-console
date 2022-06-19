@@ -28,7 +28,7 @@ function sortItem(list, useSort) {
           recordType,
           -1
         ),
-        recordType === "object" ? creationTime : name,
+        recordType === "object" ? creationTime : _.toLower(name),
       ])
     : list;
 }
