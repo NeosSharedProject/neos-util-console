@@ -22,6 +22,10 @@ export default function Home() {
             <h3>SessionViewer &rarr;</h3>
             <p>view Public Sessions.</p>
           </a>
+          <a href="/users/v1/top" className="card">
+            <h3>UserViewer &rarr;</h3>
+            <p>view Users.</p>
+          </a>
         </div>
       </main>
 
