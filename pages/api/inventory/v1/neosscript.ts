@@ -122,7 +122,14 @@ function resolveComponent(
   </component>`;
 }
 
-function resolveSlot(slot, refCountMap, assets = [], addProp, deps = 0) {
+function resolveSlot(
+  slot,
+  refCountMap,
+  assets = [],
+  typeVersions = [],
+  addProp,
+  deps = 0
+) {
   const {
     ID,
     "Persistent-ID": PersistentId,
@@ -174,6 +181,11 @@ function resolveSlot(slot, refCountMap, assets = [], addProp, deps = 0) {
     .map((a) => resolveComponent(a, refCountMap, addProp))
     .join("")}
   </assets>
+  <typeVersions>${_(typeVersions)
+    .map(
+      (version, name) => `<TypeVersion name={"${name}"} version={${version}}/>`
+    )
+    .join("")}</typeVersions>
   </slot>`;
 }
 
@@ -257,6 +269,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
       .then(({ data }) => {
         const rootSlot = _.get(data, "Object", {});
         const assets = _.get(data, "Assets", []);
+        const typeVersions = _.get(data, "TypeVersions", []);
         const propList = [];
         const addProp = (prop) => {
           propList.push(prop);
@@ -267,13 +280,19 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
         ])
           .groupBy()
           .value();
-        const mainString = resolveSlot(rootSlot, refCountMap, assets, addProp);
+        const mainString = resolveSlot(
+          rootSlot,
+          refCountMap,
+          assets,
+          typeVersions,
+          addProp
+        );
         const propDefine = _.join(propList, ",");
         res.send(
           `import React from "react";
           import { RelayManager } from "lib/neosScript/util/RelayManager";
           import { generateId } from "lib/neosScript/util";
-          import { Member } from "lib/neosScript/core/Member";
+          import { Member, TypeVersion } from "lib/neosScript/core/Member";
           export default ({${propDefine}})=>{const relay = new RelayManager(); return (${mainString});}`
         );
       })
