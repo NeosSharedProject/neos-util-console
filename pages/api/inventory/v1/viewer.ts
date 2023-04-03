@@ -43,7 +43,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
     );
     axios
       .get(
-        `https://api.neos.com/api/${ownerType}/${ownerId}/records?path=${fixedPath}`
+        `https://cloudx.azurewebsites.net/api/${ownerType}/${ownerId}/records?path=${fixedPath}`
       )
       .then((response) => {
         const result = filterItem(sortItem(response.data, useSort), keys);

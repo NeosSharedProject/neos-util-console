@@ -11,7 +11,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         ? "users"
         : "groups";
       const response = await axios.get(
-        `https://api.neos.com/api/${ownerType}/${ownerId}/records/${recordId}`
+        `https://cloudx.azurewebsites.net/api/${ownerType}/${ownerId}/records/${recordId}`
       );
       const { name, path } = response.data;
       const fiexdPath = _.join([path, name], "\\");
